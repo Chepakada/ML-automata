@@ -8,13 +8,12 @@ def deploy():
 
     app = create_app()
     app.app_context().push()
-    print("something was done")
+    
 
     db.create_all()
+    
 
 
-    stamp()
-    migrate()
-    upgrade()
+    
 
 deploy()

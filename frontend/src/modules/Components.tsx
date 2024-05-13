@@ -34,8 +34,10 @@ export function InputBox(){
 
     var jsonData = {
         "id":1,
+        "parameter":parameter,
         "file":file,
-        "parameter":parameter
+        "date": new Date().getUTCDate()
+       
     }
 
     
@@ -45,11 +47,11 @@ export function InputBox(){
         const files = e.target.files
 
         if (files && files.length > 0) {
-            setFile(files[0])
+            setFile(files[0]);
             console.log("files:", files)
-        }
+
         
-    };
+    };}
 
     const handleParameterChange = (e:ChangeEvent<HTMLInputElement>) => {
         setParameter(e.target.value)
