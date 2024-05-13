@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from "react";
+import React, { ChangeEvent, useEffect } from "react";
 import { useState } from "react";
 
 export function Header(){
@@ -32,17 +32,41 @@ export function InputBox(){
     const [file, setFile] = useState<File>();
     const [parameter, setParameter] = useState("");
 
+    var jsonData = {
+        "id":1,
+        "file":file,
+        "parameter":parameter
+    }
+
+    
+    
 
     const handleFileChange = (e:ChangeEvent<HTMLInputElement>)=>{
-        if (e.target.files){
-            setFile(e.target.files[0]);
-            console.log(file);
+        const files = e.target.files
+
+        if (files && files.length > 0) {
+            setFile(files[0])
+            console.log("files:", files)
         }
         
     };
 
+    const handleParameterChange = (e:ChangeEvent<HTMLInputElement>) => {
+        setParameter(e.target.value)
+    }
+
     const handleInput = () =>{
-        
+
+
+        fetch("http://127.0.0.1:5000/files", {
+            method: "POST",
+            mode: "cors",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(jsonData),
+          })
+    
         
     }
     
@@ -53,7 +77,7 @@ export function InputBox(){
                     <label htmlFor = "databox">Data File: </label>
                     <input type = "file" id = "databox" required onChange={handleFileChange}></input>
                     <label htmlFor = "parameter">Dependent Column Name: </label>
-                    <input type = "text" id = "parameter" placeholder="Column Name here" required></input>
+                    <input type = "text" id = "parameter" placeholder="Column Name here" required onChange = {handleParameterChange}></input>
                     
 
                     <input type= "submit" id = "datasubmit" value = "Submit" onClick={handleInput}></input>
@@ -65,3 +89,14 @@ export function InputBox(){
 
 
 
+export function DisplayFile(){
+    const [fileData, setFileData] = useState([]);
+    useEffect(()=>{
+        fetch("http://127.0.0.1:5000/files",{
+            method: "GET",
+            headers: {
+                "Content-Type":"application/json"
+            }
+        })
+    }).then()
+}
