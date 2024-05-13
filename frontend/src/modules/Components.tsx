@@ -1,26 +1,43 @@
 import React, { ChangeEvent, useEffect } from "react";
+
 import { useState } from "react";
+import '../App.css'
+import { Link } from 'react-router-dom';
 
 export function Header(){
     return (
         <header>
            <nav>
-            <u>
+            <ul>
                 <li>Home</li>
                 <li>Background</li>
                 <li>Learning</li>
                 <li>Creater Credit</li>
                 
-            </u>
+            </ul>
            </nav>
         </header>
     )
+    // return (
+    //     <header>
+    //        <nav style = {{display: 'flex'}}>
+    //         <ul style = {{display : 'flex', listStyle : 'none', padding: 0, justifyContent: 'space-between', width : '100%'}}>
+    //             <li >Home</li>
+    //             <li >Background</li>
+    //             <li >Learning</li>
+    //             <li >Creater Credit</li>
+                
+    //         </ul>
+    //        </nav>
+    //     </header>
+    // )
 }
 export function Footer(){
     var date = new Date();
 
     return(
         <footer>
+         {/* <footer style = {{ position: 'fixed', bottom: 0, left: 0, width: '100%', backgroundColor: '', padding:'10px' }} > */}
             <span>&copy;{date.getFullYear()}</span>
             <span>ML-automata</span>
         </footer>
