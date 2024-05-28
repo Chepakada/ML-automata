@@ -1,22 +1,54 @@
-import React, { ChangeEvent, useEffect } from "react";
+import React, { ChangeEvent } from "react";
+import { Routes, Route, BrowserRouter, Link } from 'react-router-dom';
 
 import { useState } from "react";
 import '../App.css'
-import { Link } from 'react-router-dom';
+import creater from './Constant.tsx'
+
+
+function CreaterCredit(){
+    function TextContent(props:any){
+        const person = props.specs;
+         return(<div >  
+                {person.CreaterName}
+                {person.Education}
+                <a href  = {person.Linkedin} target = "_blank">Linkdedin</a>
+                </div>)
+    }
+
+    return(
+        <div>
+        <h1>Creater Credit</h1>
+        {creater.map(person => <TextContent specs = {person}/>)}
+        </div>
+    )
+}
+
+
+// export default CreaterCredit;
 
 export function Header(){
     return (
+        
         <header>
+        <BrowserRouter>
            <nav>
             <ul>
                 <li>Home</li>
                 <li>Background</li>
                 <li>Learning</li>
-                <li>Creater Credit</li>
+                <li>< Link to = "/creater-credit"> Creater Credit</Link></li>
                 
             </ul>
            </nav>
+
+           <Routes>
+            
+            <Route path="/creater-credit" element={<CreaterCredit/>} />
+           </Routes>
+        </BrowserRouter>
         </header>
+        
     )
     // return (
     //     <header>
@@ -108,14 +140,3 @@ export function InputBox(){
 
 
 
-export function DisplayFile(){
-    const [fileData, setFileData] = useState([]);
-    useEffect(()=>{
-        fetch("http://127.0.0.1:5000/files",{
-            method: "GET",
-            headers: {
-                "Content-Type":"application/json"
-            }
-        })
-    }).then()
-}
