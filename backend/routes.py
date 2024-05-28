@@ -1,28 +1,39 @@
 from app import create_app, db
 from flask import Flask, jsonify, request
 from models import *
+import os
 app = create_app()
 
-@app.route("/files", methods = ["GET", "POST"], strict_slashes = False )
+@app.route("/files", methods = ["POST"])
+def upload_files():
+    if "file" not in request.files:
+        return jsonify({"error": "No file part"}), 400
+    file = request.files["file"]
 
-def files():
+    if file.filename == "":
+        return jsonify({"error": "No Selected File"}), 400
+    
+    if file:
+        file_path = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
+        file.save(file_path)
+        new_file = Files(filename = file.filename, filepath = file_path)
 
-    if request.method == "POST":
-        file_data = request.get_json()
-        new_file = Files(**file_data)
         db.session.add(new_file)
         db.session.commit()
+        return jsonify({"message":"File successfully uploaded", "file_path": file_path})
+    
 
-        if new_file.id:
-            return jsonify({"message": " File Added Successfilly"}), 201
-        else:
-            return jsonify({"error":"Failed to add file to database"}), 500
-    else:
-        files = Files.query.all()
-        results = article_schema.dump(files)
+@app.route("/files", methods = ["GET"])
+def list_files():
+    files = Files.query.all()
+    return jsonify({"files":[{"filename":file.filename, "filepath":file.filepath} for file in files]})
 
-        return jsonify(results)
+@app.route("/files/<filename>", methods = ["GET"])
+def get_file(filename):
 
+    file = Files.query.filter_by(filename = filename)
+    if file:
+        return jsonify
 
 if __name__ == "__main__":
     app.run(debug=True)

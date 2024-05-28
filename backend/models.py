@@ -3,16 +3,15 @@ from datetime import datetime
 
 class Files(db.Model):
     id = db.Column(db.Integer, primary_key = True)
-    parameter = db.Column(db.String(100), nullable = False)
-    file = db.Column(db.LargeBinary(), nullable = False)
-    date = db.Column(db.DateTime(), default = datetime.now())
+    filename = db.Column(db.String(120), unique = True, nullable = False)
+    filepath = db.Column(db.String(120), nullable = False)
 
     def __repr__(self):
         return "<Files %r>" % self.parameter
 
 class FilesShema(ma.Schema):
     class Meta:
-        fields = ("id", "parameter", "file", "date")
+        fields = ("id", "filename", "filepath")
 
 article_schema = FilesShema()
 
