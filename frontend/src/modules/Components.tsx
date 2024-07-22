@@ -82,10 +82,7 @@ export function InputBox(){
     const [parameter, setParameter] = useState("");
 
     var jsonData = {
-        "id":1,
-        "parameter":parameter,
-        "file":file,
-        "date": new Date().getUTCDate()
+       data:parameter
        
     }
 
@@ -117,6 +114,15 @@ export function InputBox(){
             method: "POST",
             mode: "cors",
             body:file,
+          });
+
+          fetch("http://127.0.0.1:5000/column_name", {
+            method: "POST",
+            mode:"cors",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify(jsonData),
           });
         
     }
