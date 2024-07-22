@@ -252,4 +252,72 @@ export function Footer(){
     )
 }
 
+export function InputBox(){
+    const [file, setFile] = useState<FormData>();
+    const [parameter, setParameter] = useState("");
+
+    var jsonData = {
+       data:parameter
+       
+    }
+
+    
+    
+
+    const handleFileChange = (e:ChangeEvent<HTMLInputElement>)=>{
+        const files = e.target.files
+
+        if (files && files.length > 0) {
+            const formData = new FormData();
+            formData.append("file", files[0])
+
+            setFile(formData);
+           
+
+        
+    };}
+
+    const handleParameterChange = (e:ChangeEvent<HTMLInputElement>) => {
+        setParameter(e.target.value)
+    }
+
+    const handleSubmit = (event) =>{
+
+        event.preventDefault();
+
+        fetch("http://127.0.0.1:5000/files", {
+            method: "POST",
+            mode: "cors",
+            body:file,
+          });
+
+          fetch("http://127.0.0.1:5000/column_name", {
+            method: "POST",
+            mode:"cors",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify(jsonData),
+          });
+        
+    }
+    
+
+    return(
+        <div>
+            <form onSubmit={handleSubmit}>
+                    <label htmlFor = "databox">Data File: </label>
+                    <input type = "file" id = "databox" required onChange={handleFileChange}></input>
+                    <label htmlFor = "parameter">Dependent Column Name: </label>
+                    <input type = "text" id = "parameter" placeholder="Column Name here" required onChange = {handleParameterChange}></input>
+                    
+
+                    <input type= "submit" id = "datasubmit" value = "Submit"></input>
+            </form>
+        </div>
+    )
+}
+
+
+
 
