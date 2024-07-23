@@ -23,11 +23,12 @@ def create_app():
     UPLOAD_FOLDER = "uploads/files"
     DOWNLOAD_FOLDER = "downloads"
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
     app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-    
+    app.config["DOWNLOAD_FOLDER"] = DOWNLOAD_FOLDER
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    app.config["DOWNLOAD_FOLDER"] = DOWNLOAD_FOLDER
+    
     db.init_app(app)
     migrate.init_app(app, db)
     ma.init_app(app)

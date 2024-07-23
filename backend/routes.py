@@ -9,6 +9,8 @@ from ml_algos import set_column_name, distinct_type
 
 
 app = create_app()
+
+
 @app.route("/files", methods = ["POST"])
 def upload_files():
     if "file" not in request.files:
@@ -77,5 +79,7 @@ def list_column_name():
     col_names = Column.query.all()
     return jsonify({"col_name": [{"col_name":col_name} for col_name in col_names]})
 
+
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True,  host='127.0.0.1', port=5000)
