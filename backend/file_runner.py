@@ -28,7 +28,7 @@ extensions = {"txt":txt_file, "csv":csv_file, "xlsx":xlsx_file}
 
 def run_new_delete_old(folder_path):
     files = glob.glob(os.path.join(folder_path, "*"))
-    if len(files)<=1:
+    if len(files)<1:
         print("no files found")
         return
 
@@ -39,17 +39,18 @@ def run_new_delete_old(folder_path):
     for file in files[1:]:
         os.remove(file)
         print("deleted old files")
+    print(os.path.basename(newest_file))
     return newest_file
 
 def readable_table(file):
     file_name = os.path.basename(file)
 
-   
+    print(file_name)
 
     
 
-    file_ext = file_name.split(".", 1)
-
+    file_ext = file_name.split(".", 1)[1]
+    print(file_ext)
     if file_ext in extensions:
        return extensions[file_ext](file)
     else:
