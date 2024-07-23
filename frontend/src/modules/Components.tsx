@@ -5,6 +5,26 @@ import { useState } from "react";
 import '../App.css'
 import {creater,Learning} from './Constant.tsx'
 
+interface Result{
+    type?:string;
+    output?:string;
+    metrics?:any;
+    image?:string;
+    images?:{
+        metric_image:string;
+        scatter_image:string;
+    }
+}
+
+interface TaskID{
+    task_id?:string;
+}
+
+interface TaskStatus{
+    state?:string,
+    status?:string,
+    result?:Result
+}
 
 
 function Home() {
@@ -21,6 +41,10 @@ function Home() {
 export function InputBox() {
     const [file, setFile] = useState<FormData>();
     const [parameter, setParameter] = useState("");
+    const [result, setResult] = useState<Result| null>(null);
+    const [taskId, setTaskId] = useState<TaskID| null>(null);
+    const [taskStatus, setTaskStatus] = useState<TaskStatus| null>(null);
+
 
     var jsonData = {
         "id": 1,
@@ -44,7 +68,7 @@ export function InputBox() {
         setParameter(e.target.value);
     };
 
-    const handleSubmit = (event) => {
+    const handleSubmit =async (event:any) => {
         event.preventDefault();
 
         fetch("http://127.0.0.1:5000/files", {
@@ -52,7 +76,55 @@ export function InputBox() {
             mode: "cors",
             body: file,
         });
+
+        const jsonData  = {data: parameter}
+
+        const paramResponse = fetch("http://127.0.0.1:5000/column_name", {
+            method: "POST",
+            mode: "cors",
+            headers: {
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify(jsonData)
+        })
+
+        const paramData = (await paramResponse).json();
+        console.log("Parameter repsonse:", paramData);
+
+        const taskIDreq = await fetch("http://127.0.0.1:5000/start-task", {
+            method:"POST",
+            mode:"cors"
+        });
+        const taskID: TaskID = await taskIDreq.json();
+        console.log("Result response:", taskID);
+
+        setTaskId(taskID)
+        
+
+        const checkStatus = async(taskID: TaskID) => {
+            const intervalID = setInterval(async() => {
+            try{
+                const response = await fetch(`http://localhost:5000/task-status/${taskID.task_id}`)
+                console.log(taskID.task_id)
+                const data: TaskStatus = await response.json();
+                setTaskStatus(data);
+                console.log(taskStatus);
+                if (data.state === "SUCCESS" || data.state === "FAILURE"){
+                    clearInterval(intervalID);
+                    if (data.result){
+                        setResult(data.result);
+                    }
+                }
+            }
+            catch(error){
+                console.error("Error checking status:", error)
+            }
+        }, 5000);
+    }
+        checkStatus(taskID)
+        
     };
+    
 
     return (
         <div className="inputbox-container">
@@ -67,7 +139,35 @@ export function InputBox() {
                 </div>
                 <input type="submit" id="datasubmit" value="Submit" className="submit-button" />
             </form>
+            {taskStatus && (
+                <div className = "task-status">
+                    <h2>Task Status</h2>
+                    <p>State: {taskStatus.state}</p>
+                    {taskStatus.status && <p> Status: {taskStatus.status}</p>}
+                </div>
+            )}
+            {result && (
+            <div className="result_container">
+                <h2>Results</h2>
+                <pre>{JSON.stringify(result, null, 2)}</pre>
+                {result.type && <p><strong>Type:</strong>{result.type}</p>}
+                {result.output && <p><strong>Output:</strong>{result.output}</p>}
+                {result.metrics && (
+                    <div>
+                        <h3>Metrics</h3>
+                        <pre>{JSON.stringify(result.metrics, null, 2)}</pre>
+                        </div>
+                )}
+                {result.image && <img src = {`data:image/png;base64, ${result.image}`} alt="Result Visualization"/>}
+                {result.images && (
+                        <>
+                            <img src={`data:image/png;base64,${result.images.metric_image}`} alt="Metric Visualization" />
+                            <img src={`data:image/png;base64,${result.images.scatter_image}`} alt="Scatter Plot Visualization" />
+                        </>
+                    )}
+                </div>)}
         </div>
+        
     );
 }
 
@@ -79,7 +179,7 @@ export function InputBox() {
 
 
 function Hi() {
-    function TextContent(props) {
+    function TextContent(props:any) {
         const wheretolearn = props.specs;
         return (
             <div className="text-content-container">
@@ -88,19 +188,19 @@ function Hi() {
                 <h3>Types of Learning</h3>
                 
                 <ul className="learning-types">
-                    {wheretolearn.types.map((type, index) => (
+                    {wheretolearn.types.map((type:any, index:any) => (
                         <li key={index} className="learning-type-item">
                             <h4>{type.typeName}</h4>
                             <p>{type.description}</p>
                             <h5>Examples</h5>
                             <ul className="examples-list">
-                                {type.examples.map((example, idx) => (
+                                {type.examples.map((example:any, idx:any) => (
                                     <li key={idx}>{example}</li>
                                 ))}
                             </ul>
                             <h5>Common Algorithms</h5>
                             <ul className="algorithms-list">
-                                {type.commonAlgorithms.map((algorithm, idx) => (
+                                {type.commonAlgorithms.map((algorithm:any, idx:any) => (
                                     <li key={idx}>{algorithm}</li>
                                 ))}
                             </ul>
@@ -109,7 +209,7 @@ function Hi() {
                 </ul>
                 <h3>Where to Learn</h3>
                 <ul className="learning-resources">
-                    {wheretolearn.learningResources.map((learningResource, index) => (
+                    {wheretolearn.learningResources.map((learningResource:any, index:any) => (
                         <li key={index} className="learning-resource-item">
                             <strong>{learningResource.platform}</strong>: {learningResource.course}
                             <p>{learningResource.description}</p>
@@ -120,11 +220,11 @@ function Hi() {
                     ))}
                 </ul>
                 <h3>Additional Resources</h3>
-                {wheretolearn.additionalResources.map((resource, index) => (
+                {wheretolearn.additionalResources.map((resource:any, index:any) => (
                     <div key={index} className="additional-resources">
                         <h4>{resource.type}</h4>
                         <ul className="additional-resources-list">
-                            {resource.items.map((item, idx) => (
+                            {resource.items.map((item:any, idx:any) => (
                                 <li key={idx}>
                                     {item.title ? (
                                         <>
@@ -240,6 +340,10 @@ export function Header(){
     //     </header>
     // )
 }
+
+
+
+
 export function Footer(){
     var date = new Date();
 
@@ -251,73 +355,3 @@ export function Footer(){
         </footer>
     )
 }
-
-export function InputBox(){
-    const [file, setFile] = useState<FormData>();
-    const [parameter, setParameter] = useState("");
-
-    var jsonData = {
-       data:parameter
-       
-    }
-
-    
-    
-
-    const handleFileChange = (e:ChangeEvent<HTMLInputElement>)=>{
-        const files = e.target.files
-
-        if (files && files.length > 0) {
-            const formData = new FormData();
-            formData.append("file", files[0])
-
-            setFile(formData);
-           
-
-        
-    };}
-
-    const handleParameterChange = (e:ChangeEvent<HTMLInputElement>) => {
-        setParameter(e.target.value)
-    }
-
-    const handleSubmit = (event) =>{
-
-        event.preventDefault();
-
-        fetch("http://127.0.0.1:5000/files", {
-            method: "POST",
-            mode: "cors",
-            body:file,
-          });
-
-          fetch("http://127.0.0.1:5000/column_name", {
-            method: "POST",
-            mode:"cors",
-            headers:{
-                "Content-Type":"application/json"
-            },
-            body:JSON.stringify(jsonData),
-          });
-        
-    }
-    
-
-    return(
-        <div>
-            <form onSubmit={handleSubmit}>
-                    <label htmlFor = "databox">Data File: </label>
-                    <input type = "file" id = "databox" required onChange={handleFileChange}></input>
-                    <label htmlFor = "parameter">Dependent Column Name: </label>
-                    <input type = "text" id = "parameter" placeholder="Column Name here" required onChange = {handleParameterChange}></input>
-                    
-
-                    <input type= "submit" id = "datasubmit" value = "Submit"></input>
-            </form>
-        </div>
-    )
-}
-
-
-
-

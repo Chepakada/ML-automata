@@ -2,15 +2,18 @@ import pandas as pd
 import numpy as np
 import tensorflow as tf
 import io
+
 import matplotlib.pyplot as plt
 from collections import Counter
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Embedding, SimpleRNN, Dense
 
+
 COLUMN_NAME = ""
 
 def set_column_name(dependend_column):
     COLUMN_NAME = dependend_column
+
 
 def distinct_type(content):
     if isinstance(content, str):
@@ -149,7 +152,7 @@ def Run_tabular( content):
     from sklearn.preprocessing import OneHotEncoder, LabelEncoder
     import seaborn as sns
     df = content
-
+    print("Data accessed")
     if df[COLUMN_NAME].nuniques() < 3 or df[COLUMN_NAME] == "object":
         output = categoric_prediction(df, df[COLUMN_NAME])
     else:
