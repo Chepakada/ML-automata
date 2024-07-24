@@ -11,11 +11,10 @@ base_url = "http://127.0.0.1:5000"
 files_url = base_url +"/files"
 
 def txt_file(file_path):
-    with open(file_path, "r") as file:
-        content = file.read()
-        return content
+    return pd.read_fwf(file_path).to_string()
     
 def csv_file(file_path):
+    print("good ol' csv")
     return pd.read_csv(file_path)
 
 def xlsx_file(file_path):
@@ -31,7 +30,7 @@ def run_new_delete_old(folder_path):
     if len(files)<1:
         print("no files found")
         return
-
+    print("rearranging the directory")
     files.sort(key = os.path.getatime, reverse=True)
 
     newest_file = files[0]
@@ -44,7 +43,7 @@ def run_new_delete_old(folder_path):
 
 def readable_table(file):
     file_name = os.path.basename(file)
-
+    print("reading file")
     print(file_name)
 
     

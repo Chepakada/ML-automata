@@ -1,14 +1,25 @@
+# from rq import Worker, Queue, Connection, SimpleWorker
+# from redis import Redis
+
+# # Connect to Redis server
+# redis_conn = Redis()
+
+# # Specify which queues to listen to
+# listen = ['default']
+
+# if __name__ == '__main__':
+#     with Connection(redis_conn):
+#         worker = SimpleWorker(map(Queue, listen))
+#         worker.work()
+from celery import shared_task
 from celery import Celery
 
-app = Celery('test', broker='redis://127.0.0.1:6379/0', backend='redis://127.0.0.1:6379/0')
+from tasks import test_task
 
-@app.task
-def test_task():
-    return 'Test Task Executed Successfully'
+def main():
+    # Run the test task
+    result = test_task.apply_async().get(timeout=30)
+    print(result)
 
 if __name__ == '__main__':
-    result = test_task.apply_async()
-    try:
-        print(result.get(timeout = 10))
-    except Exception as e:
-        print(f"Error: {e}")
+    main()

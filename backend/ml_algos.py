@@ -5,17 +5,19 @@ import io
 
 import matplotlib.pyplot as plt
 from collections import Counter
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Embedding, SimpleRNN, Dense
+from keras import models
+from keras import layers
 
 
 COLUMN_NAME = ""
 
 def set_column_name(dependend_column):
+    global COLUMN_NAME
     COLUMN_NAME = dependend_column
 
 
 def distinct_type(content):
+    print("we be runnin baby")
     if isinstance(content, str):
         return RNN(content)
     if isinstance(content, pd.DataFrame):
@@ -25,6 +27,7 @@ def distinct_type(content):
 
 def RNN(content):
     text = content
+    print("RNN it is")
 
     vocab = sorted(set(text))
     vocab_size = len(vocab)
@@ -66,10 +69,10 @@ def RNN(content):
     dataset = dataset.shuffle(BUFFER_SIZE).batch(BATCH_SIZE, drop_remainder=True)
 
     # Build the RNN model
-    model = Sequential([
-        Embedding(vocab_size, 256, batch_input_shape=[BATCH_SIZE, None]),
-        SimpleRNN(1024, return_sequences=True, stateful=True, recurrent_initializer='glorot_uniform'),
-        Dense(vocab_size)
+    model = models.Sequential([
+        layers.Embedding(vocab_size, 256, batch_input_shape=[BATCH_SIZE, None]),
+        layers.SimpleRNN(1024, return_sequences=True, stateful=True, recurrent_initializer='glorot_uniform'),
+        layers.Dense(vocab_size)
     ])
 
     # Define the loss function

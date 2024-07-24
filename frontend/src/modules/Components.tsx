@@ -45,6 +45,26 @@ export function InputBox() {
     const [taskId, setTaskId] = useState<TaskID| null>(null);
     const [taskStatus, setTaskStatus] = useState<TaskStatus| null>(null);
 
+    const checkStatus = async(taskID: TaskID) => {
+        const intervalID = setInterval(async() => {
+        try{
+            const response = await fetch(`http://localhost:5000/task-status/${taskID.task_id}`)
+            console.log(taskID.task_id);
+            const data: TaskStatus = await response.json();
+            setTaskStatus(data);
+            console.log(data);
+            if (data.state === "SUCCESS" || data.state === "FAILURE"){
+                clearInterval(intervalID);
+                if (data.result){
+                    setResult(data.result);
+                }
+            }
+        }
+        catch(error){
+            console.error("Error checking status:", error);
+        }
+    }, 5000);
+}
 
     var jsonData = {
         "id": 1,
@@ -98,30 +118,10 @@ export function InputBox() {
         const taskID: TaskID = await taskIDreq.json();
         console.log("Result response:", taskID);
 
-        setTaskId(taskID)
-        
+        setTaskId(taskID);
+        checkStatus(taskID);
 
-        const checkStatus = async(taskID: TaskID) => {
-            const intervalID = setInterval(async() => {
-            try{
-                const response = await fetch(`http://localhost:5000/task-status/${taskID.task_id}`)
-                console.log(taskID.task_id)
-                const data: TaskStatus = await response.json();
-                setTaskStatus(data);
-                console.log(taskStatus);
-                if (data.state === "SUCCESS" || data.state === "FAILURE"){
-                    clearInterval(intervalID);
-                    if (data.result){
-                        setResult(data.result);
-                    }
-                }
-            }
-            catch(error){
-                console.error("Error checking status:", error)
-            }
-        }, 5000);
-    }
-        checkStatus(taskID)
+        
         
     };
     
