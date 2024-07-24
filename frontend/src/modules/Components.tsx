@@ -1,9 +1,81 @@
 import React, { ChangeEvent } from "react";
 import { Routes, Route, BrowserRouter, Link } from 'react-router-dom';
+
+// import { GoogleLogin, GoogleLogout, GoogleLoginResponse, GoogleLoginResponseOffline } from 'react-google-login';
+
+import { GoogleLogin, GoogleLogout, GoogleLoginResponse, GoogleLoginResponseOffline } from 'react-google-login';
+
 import heroImage from '../images/hi.webp'
 import { useState } from "react";
 import '../App.css'
 import {creater,Learning} from './Constant.tsx'
+
+const clientId = '335169073502-ptdlb09an2kk7u4cj545022s4suig5f2.apps.googleusercontent.com';
+
+
+
+
+
+
+const Login = () => {
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [user, setUser] = useState<any>(null);
+  
+    const onSuccess = (response: GoogleLoginResponse | GoogleLoginResponseOffline) => {
+      if ('profileObj' in response) {
+        console.log('Login Success: currentUser:', response.profileObj);
+        setIsLoggedIn(true);
+        setUser(response.profileObj);
+      } else {
+        console.log('Login Success: response:', response);
+      }
+    };
+  
+    const onFailure = (response: any) => {
+      console.error('Login failed: res:', response);
+      alert('Failed to login. Please try again later.');
+    };
+  
+    const onLogoutSuccess = () => {
+      console.log('Logged out');
+      setIsLoggedIn(false);
+      setUser(null);
+    };
+  
+    return (
+      <div className="login-container">
+        <div className="login-box">
+          <h2 className="login-title">Welcome to ML-Automata</h2>
+          <p className="login-description">Login with your Google account to access the ML-Automata platform. Our system provides cutting-edge machine learning tools to help you analyze your data with ease.</p>
+          {isLoggedIn ? (
+            <div className="logout-section">
+              <h3 className="welcome-message">Welcome, {user?.name}</h3>
+              <GoogleLogout
+                clientId={clientId}
+                buttonText="Logout"
+                onLogoutSuccess={onLogoutSuccess}
+                className="logout-button"
+              />
+            </div>
+          ) : (
+            <div className="login-section">
+              <GoogleLogin
+                clientId={clientId}
+                buttonText="Login with Google"
+                onSuccess={onSuccess}
+                onFailure={onFailure}
+                cookiePolicy={'single_host_origin'}
+                isSignedIn={true}
+                className="login-button"
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+  
+// export default Login;
 
 interface Result{
     type?:string;
@@ -313,6 +385,7 @@ export function Header(){
                 {/* <li>Background</li> */}
                 <li><Link to = "/Hi">Background</Link></li>
                 <li>< Link to = "/creater-credit"> Creater Credit</Link></li>
+                <li><Link to="/login">Login</Link></li> {/* Add Login link */}
                 
             </ul>
            </nav>
@@ -321,6 +394,7 @@ export function Header(){
            <Route path="/Home" element={<Home/>} />
             <Route path="/creater-credit" element={<CreaterCredit/>} />
             <Route path="/Hi" element={<Hi/>} />
+            <Route path="/login" element={<Login />} /> Add Login route
            </Routes>
         </BrowserRouter>
         </header>

@@ -365,7 +365,56 @@ body {
   color: #61dafb;
 }
 
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(to bottom right, #2c3e50, #181c1f);
+}
 
+.login-box {
+  background: rgba(0, 0, 0, 0.7);
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.login-title {
+  color: #9f099f; ; 
+  font-size: 2em;
+  margin-bottom: 20px;
+}
+
+.login-description {
+  color : #e18535;
+  font-size: 1.2em;
+  margin-bottom: 30px;
+}
+
+.login-section, .logout-section {
+  margin-top: 20px;
+}
+
+.login-button, .logout-button {
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1em;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+.login-button:hover, .logout-button:hover {
+  background-color: #357ae8;
+}
+
+.welcome-message {
+  margin-bottom: 20px;
+}
 footer{
   position: fixed;
   bottom: 0;
