@@ -430,3 +430,15 @@ footer{
     transform: rotate(360deg);
   }
 } */
+
+#metric_image, #scatter_image {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  max-width: 100%;
+  height: auto;
+}
+
+
+

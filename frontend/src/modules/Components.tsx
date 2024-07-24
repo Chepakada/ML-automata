@@ -232,9 +232,9 @@ export function InputBox() {
                 )}
                 {result.image && <img src = {`data:image/png;base64, ${result.image}`} alt="Result Visualization"/>}
                 {result.images && (
-                        <>
-                            <img src={`data:image/png;base64,${result.images.metric_image}`} alt="Metric Visualization" />
-                            <img src={`data:image/png;base64,${result.images.scatter_image}`} alt="Scatter Plot Visualization" />
+                        <> 
+                            <img src= {`data:image/png;base64,${result.images.metric_image}`} id= "metric_image" alt="Metric Visualization" />
+                            <img src={`data:image/png;base64,${result.images.scatter_image}`} id= "scatter_image" alt="Scatter Plot Visualization" />
                         </>
                     )}
                 </div>)}
