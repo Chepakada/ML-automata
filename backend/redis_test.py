@@ -1,25 +1,15 @@
-# from rq import Worker, Queue, Connection, SimpleWorker
-# from redis import Redis
+import tensorflow as tf
 
-# # Connect to Redis server
-# redis_conn = Redis()
+# Check if GPU is available
+if tf.config.list_physical_devices('GPU'):
+    print("GPU is available")
+else:
+    print("GPU is not available")
 
-# # Specify which queues to listen to
-# listen = ['default']
+# Create a simple computation to run on the GPU
+with tf.device('/GPU:0'):
+    a = tf.constant([[1.0, 2.0], [3.0, 4.0]])
+    b = tf.constant([[1.0, 1.0], [0.0, 1.0]])
+    c = tf.matmul(a, b)
 
-# if __name__ == '__main__':
-#     with Connection(redis_conn):
-#         worker = SimpleWorker(map(Queue, listen))
-#         worker.work()
-from celery import shared_task
-from celery import Celery
-
-from tasks import test_task
-
-def main():
-    # Run the test task
-    result = test_task.apply_async().get(timeout=30)
-    print(result)
-
-if __name__ == '__main__':
-    main()
+print(c)

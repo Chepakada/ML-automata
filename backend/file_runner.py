@@ -27,6 +27,9 @@ extensions = {"txt":txt_file, "csv":csv_file, "xlsx":xlsx_file}
 
 def run_new_delete_old(folder_path):
     files = glob.glob(os.path.join(folder_path, "*"))
+    x = os.open("loggor/log.txt", os.O_WRONLY | os.O_CREAT)
+    os.write(x, b"testing")
+    os.close(x)
     if len(files)<1:
         print("no files found")
         return

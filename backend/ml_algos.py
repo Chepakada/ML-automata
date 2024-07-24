@@ -7,6 +7,12 @@ import matplotlib.pyplot as plt
 from collections import Counter
 from keras import models
 from keras import layers
+import os
+# Set the XLA_FLAGS environment variable to point to the CUDA directory
+os.environ['XLA_FLAGS'] = '--xla_gpu_cuda_data_dir=/usr/local/cuda-11.2/nvvm/libdevice'
+
+# Optionally, specify which GPU to use
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'  # Use only the first GPU
 
 
 COLUMN_NAME = ""
@@ -14,29 +20,31 @@ COLUMN_NAME = ""
 def set_column_name(dependend_column):
     global COLUMN_NAME
     COLUMN_NAME = dependend_column
+    print(COLUMN_NAME)
 
 
 def distinct_type(content):
+    import os
+    x = os.open("loggor/log.txt", os.O_WRONLY | os.O_CREAT)
+    os.write(x, b"testing")
+    os.close(x)
     print("we be runnin baby")
     if isinstance(content, str):
         return RNN(content)
     if isinstance(content, pd.DataFrame):
         return Run_tabular(content)
-
+    
 
 
 def RNN(content):
+
     text = content
     print("RNN it is")
 
+
     vocab = sorted(set(text))
     vocab_size = len(vocab)
-
-
-    char_to_index = {char: idx for idx, char in enumerate(vocab)}
-    index_to_char = np.array(vocab)
-
-   
+    print(vocab_size)
 
     # Create a mapping from characters to integers
     char_to_index = {char: idx for idx, char in enumerate(vocab)}
@@ -46,7 +54,7 @@ def RNN(content):
     text_as_int = np.array([char_to_index[char] for char in text])
 
     # Create training examples and targets
-    seq_length = 100  # Increase sequence length for larger inputs
+    seq_length = 50  # Increase sequence length for larger inputs
     examples_per_epoch = len(text) - seq_length
 
     char_dataset = tf.data.Dataset.from_tensor_slices(text_as_int)
@@ -60,6 +68,8 @@ def RNN(content):
 
     dataset = sequences.map(split_input_target)
 
+
+    print(dataset)
     # Batch size
     BATCH_SIZE = 64
 
@@ -70,8 +80,8 @@ def RNN(content):
 
     # Build the RNN model
     model = models.Sequential([
-        layers.Embedding(vocab_size, 256, batch_input_shape=[BATCH_SIZE, None]),
-        layers.SimpleRNN(1024, return_sequences=True, stateful=True, recurrent_initializer='glorot_uniform'),
+        layers.Embedding(vocab_size, 256, input_length = seq_length),
+        layers.SimpleRNN(1024, return_sequences=True, stateful=True, input_shape= (seq_length, ),  recurrent_initializer='glorot_uniform'),
         layers.Dense(vocab_size)
     ])
 
@@ -82,13 +92,18 @@ def RNN(content):
     model.compile(optimizer='adam', loss=loss)
 
     # Train the model
-    EPOCHS = 30
+    EPOCHS = 10
     history = model.fit(dataset, epochs=EPOCHS)
 
-    # Function to generate text
+# Function to generate text
     def generate_text(model, start_string, num_generate=500):
-        # Convert start string to numbers (vectorize)
-        input_eval = [char_to_index[s] for s in start_string]
+    # Convert start string to numbers (vectorize)
+        input_eval = []
+        for s in start_string:
+            if s in char_to_index:
+                input_eval.append(char_to_index[s])
+            else:
+                print(f"Warning: Character '{s}' not found in vocabulary. Skipping.")
         input_eval = tf.expand_dims(input_eval, 0)
 
         # Empty string to store our results
@@ -100,13 +115,14 @@ def RNN(content):
 
         # Reset the model states
         model.reset_states()
+        
         for i in range(num_generate):
             predictions = model(input_eval)
             predictions = tf.squeeze(predictions, 0)
 
             # Scale the logits by the temperature
             predictions = predictions / temperature
-            predicted_id = tf.random.categorical(predictions, num_samples=1)[-1,0].numpy()
+            predicted_id = tf.random.categorical(predictions, num_samples=1)[-1, 0].numpy()
 
             # Pass the predicted character as the next input to the model
             # along with the previous hidden state
@@ -116,22 +132,42 @@ def RNN(content):
 
         return start_string + ''.join(text_generated)
 
-   
-    
 
+    # Reset the model states
     def calculate_perplexity(model, dataset):
-        total_loss = 0
+        total_loss = 0.0
         num_batches = 0
+
         for input_example, target_example in dataset:
+            # Ensure the input shape is correct
+            input_example = tf.expand_dims(input_example, -1)  # Add a new dimension if necessary
+
+            # Get predictions from the model
             predictions = model(input_example)
+
+            # Compute the loss
             loss = tf.keras.losses.sparse_categorical_crossentropy(target_example, predictions, from_logits=True)
             total_loss += tf.reduce_sum(loss)
             num_batches += 1
+
         avg_loss = total_loss / num_batches
         perplexity = tf.exp(avg_loss)
         return perplexity
-    
-    char_freq = Counter(text)
+
+
+
+    char_freq = {char: 0 for char in vocab}
+
+# If you want to populate char_freq with actual frequencies from the text:
+    # Create a frequency dictionary for characters in the text
+    freq_counter = Counter(text)
+
+    # Update char_freq with the actual frequencies
+    for char in vocab:
+        char_freq[char] = freq_counter[char]
+
+
+
 
     # Plot character frequency
     plt.figure(figsize=(10, 6))
@@ -145,40 +181,35 @@ def RNN(content):
     plt.savefig(img, format='png')
     img.seek(0)
     plt.close()
-    
-    
-    
+
+
+
     perplexity = calculate_perplexity(model, dataset)
-    return ["RNN", generate_text(model, start_string=COLUMN_NAME, num_generate=500), {"metrix": perplexity}, img]
+    ["RNN", generate_text(model, start_string=COLUMN_NAME, num_generate=500), {"metrix": perplexity}, img]
+
 
 def Run_tabular( content):
     from sklearn.preprocessing import OneHotEncoder, LabelEncoder
     import seaborn as sns
+    import os
     df = content
+    print(COLUMN_NAME)
     print("Data accessed")
-    if df[COLUMN_NAME].nuniques() < 3 or df[COLUMN_NAME] == "object":
-        output = categoric_prediction(df, df[COLUMN_NAME])
-    else:
-        output = linear_regression(df, df[COLUMN_NAME])
-
-        def scatter_matrix(df):
-            sns.pairplot(df)
-            plt.suptitle("Scatter Matrix of Features and Target", y = 1.02)
-
-            img = io.BytesIO()
-            plt.savefig(img, format = "png")
-            img.seek(0)
-            plt.close()
-            return img
-        output.append(scatter_matrix(df))
-
+    x = os.open("loggor/log.txt", os.O_WRONLY | os.O_CREAT)
+    os.write(x, b"testing run tabular")
+    os.close(x)
+    
+    
 
     def one_hot_encode(df):
         # Identify non-numeric columns
+        x = os.open("loggor/log.txt", os.O_WRONLY | os.O_CREAT)
+        os.write(x, b"testing")
+        os.close(x)
         non_numeric_cols = df.select_dtypes(exclude=[np.number]).columns
 
         # One-Hot Encode non-numeric columns
-        encoder = OneHotEncoder(sparse=False)
+        encoder = OneHotEncoder(sparse_output=False)
         encoded_data = encoder.fit_transform(df[non_numeric_cols])
 
         # Create a DataFrame with the encoded data
@@ -297,6 +328,24 @@ def Run_tabular( content):
             
 
         return ["linear_reg", model, {"mae": mae,"mse": mse,"r2":r2}, model_efficiency()]
+    
+    if df[COLUMN_NAME].nunique() < 3 or df[COLUMN_NAME].dtype == "object":
+        
+        output = categoric_prediction(df, df[COLUMN_NAME])
+    else:
+        output = linear_regression(df, df[COLUMN_NAME])
+
+        def scatter_matrix(df):
+            sns.pairplot(df)
+            plt.suptitle("Scatter Matrix of Features and Target", y = 1.02)
+
+            img = io.BytesIO()
+            plt.savefig(img, format = "png")
+            img.seek(0)
+            plt.close()
+            return img
+        output.append(scatter_matrix(df))
+
         
     return output
 

@@ -13,7 +13,7 @@ from app.final_task import results
 import base64
 
 
-
+COLUMN_NAME = ""
 
 
 bp = Blueprint("main", __name__)
@@ -54,7 +54,7 @@ def upload_files():
 def start_task():
     try:
         print("task started")
-        task = results.apply_async(args = [current_app.config["UPLOAD_FOLDER"]])
+        task = results.apply_async(args = [current_app.config["UPLOAD_FOLDER"], COLUMN_NAME])
         # job = q.enqueue(results)
        
         return jsonify({"task_id":task.id}), 202
@@ -116,6 +116,9 @@ def get_file(filename):
 def create_col_name():
     data = request.get_json()
     column_name = data.get("data")
+    global COLUMN_NAME
+    COLUMN_NAME = column_name
+    print(column_name)
     set_column_name(column_name)
     # col_name = Column(column_name = column_name)
     # db.session.add(col_name)
